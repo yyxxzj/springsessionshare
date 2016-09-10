@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"    
+    xmlns:mongo="http://www.springframework.org/schema/data/mongo"  
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+            http://www.springframework.org/schema/data/mongo  
+            http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+            http://www.springframework.org/schema/context  
+     	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+     	http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">  
+
+		<context:property-placeholder location="classpath:database.properties" />
+		
+		<context:annotation-config/>
+		
+		<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+	        <property name="maxIdle" value="${redis.maxIdle}" />
+	        <property name="maxTotal" value="${redis.maxActive}" />
+	        <property name="maxWaitMillis" value="${redis.maxWait}" />
+	        <property name="testOnBorrow" value="${redis.testOnBorrow}" />
+    	</bean>
+		
+		 <bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		 	 <property name="hostName" value="${redis.host}"/>
+		 	 <property name="port" value="${redis.port}"/>
+		 	 <property name="password" value="${redis.pass}"/>
+		 	 <property name="poolConfig" ref="poolConfig"/>
+		 </bean>
+		 
+    	<bean id="stringSerializer" class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+    	
+    	<bean id="hashSerializer" class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"/>
+    
+	    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+	        <property name="connectionFactory" ref="connectionFactory" />
+	        <property name="keySerializer" ref="stringSerializer"/>
+	        <property name="valueSerializer" ref="stringSerializer"/>
+	        <property name="hashKeySerializer" ref="stringSerializer" />
+	        <property name="hashValueSerializer" ref="hashSerializer"/>
+	    </bean>
+	    
+	    <bean id="redisHttpSessionConfiguration"  class="org.springframework.session.data.redis.config.annotation.web.http.RedisHttpSessionConfiguration">  
+    		<property name="maxInactiveIntervalInSeconds" value="180000" />  
+		</bean>
+
+</beans>
